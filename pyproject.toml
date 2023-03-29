@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "pykitty"
+version = "0.1.0"
+description = "The unofficial Kittysplit wrapper for Python."
+authors = ["Lars Heinen"]
+license = "MIT License"
+readme = "README.md"
+
+[tool.poetry.scripts]
+pykitty = "pykitty.cli:app"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+requests = "^2.28.2"
+typer = {extras = ["all"], version = "^0.7.0"}
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.1.0"
+isort = "^5.12.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
