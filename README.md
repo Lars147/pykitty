@@ -12,6 +12,9 @@ pip install pykitty
 
 ## Usage
 
+1. Open a kitty on https://kittysplit.de/
+2. Once opened, you can extract your `kitty_id` from the URL, e.g. `test_kitty/ADLKFJLAKD.../` in https://kittysplit.de/test_kitty/ADLKFJLAKD.../
+
 Create an instance of the `KittySplitAPI` class with the Kitty ID:
 
 ```python
@@ -60,6 +63,7 @@ This project is licensed under the MIT License.
 
 ## Next Steps (TODO)
 
+- [ ] Add Kitty URL parser to extract `kitty_id` and language from any kittysplit URL
 - [ ] Implement `get_expenses` method to retrieve all expenses.
 - [ ] Add support for updating and deleting expenses.
 - [ ] Document CLI usage.
