@@ -52,28 +52,33 @@ class KittySplitUserParser(HTMLParser):
 
 
 def parse_expenses(html: str) -> List[dict]:
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = BeautifulSoup(html, "html.parser")
     entries = []
 
-    for li in soup.find_all('li', class_='entry-list-item list-item entry-all entry-yours'):
+    for li in soup.find_all(
+        "li", class_="entry-list-item list-item entry-all entry-yours"
+    ):
         entry = {}
-        entry_link = li.find('a', class_='entry-link')
-        entry['url'] = entry_link['href']
+        entry_link = li.find("a", class_="entry-link")
+        entry["url"] = entry_link["href"]
 
-        entry_info = entry_link.find('div', class_='col-xs-12').text.strip()
-        buyer, amount, description = re.search(r"^(.*) (?:paid|hat) €(.*?) (?:for|für) (.*)", entry_info).groups()
-        entry['buyer'] = buyer.strip()
-        entry['price'] = {'currency': '€', 'amount': amount.replace(",", ".").strip()}
-        entry['description'] = description.replace(" bezahlt.", "").strip()
+        entry_info = entry_link.find("div", class_="col-xs-12").text.strip()
+        buyer, amount, description = re.search(
+            r"^(.*) (?:paid|hat) €(.*?) (?:for|für) (.*)", entry_info
+        ).groups()
+        entry["buyer"] = buyer.strip()
+        entry["price"] = {"currency": "€", "amount": amount.replace(",", ".").strip()}
+        entry["description"] = description.replace(" bezahlt.", "").strip()
 
-        participants_text = entry_link.find('span', class_='entry-label entry-label-parties').text.strip()
-        participants = participants_text.split(': ')[1]
+        participants_text = entry_link.find(
+            "span", class_="entry-label entry-label-parties"
+        ).text.strip()
+        participants = participants_text.split(": ")[1]
         if participants in ["Alle.", "everyone."]:
-            entry['participants'] = "all"
+            entry["participants"] = "all"
         else:
-            entry['participants'] = participants_text.split(': ')[1]
+            entry["participants"] = participants_text.split(": ")[1]
 
         entries.append(entry)
 
     return entries
-
