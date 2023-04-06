@@ -2,7 +2,6 @@ import csv
 import time
 from datetime import datetime
 from typing import Union
-from urllib.parse import urlparse
 
 import typer
 from rich.progress import track
@@ -10,21 +9,6 @@ from rich.progress import track
 from pykitty import client
 
 app = typer.Typer()
-
-
-def parse_kitty_id(kitty_url) -> str:
-    kitty_url_parser = urlparse(kitty_url)
-
-    if "kittysplit." not in kitty_url_parser.netloc:
-        raise ValueError("Invalid Domain! Must be a kittysplit domain.")
-
-    kitty_url_parts = kitty_url_parser.path.split(
-        "/"
-    )  # e.g. ['', 'test_kitty', 'QRMCYapVh-2', 'entries']
-    if len(kitty_url_parts) < 3:
-        raise ValueError("Invalid URL! Must be a Kittysplit URL.")
-
-    return f"{kitty_url_parts[1]}/{kitty_url_parts[2]}"
 
 
 def convert_date_format(date_string: str) -> str:
@@ -56,9 +40,7 @@ def add_expenses(
         expense_weight (float, optional): The weights for your expenses, e.g. '0.4' would assign your expenses a weight of 0.4 while it distributes the weights of the other users equally. Defaults to None.
         timeout_between_requests (float, optional): Be nice to Kittysplit and add timeouts between the requests. Defaults to 0.5.
     """
-    kitty_id = parse_kitty_id(kitty_url)
-
-    kitty_api = client.KittySplitAPI(kitty_id=kitty_id)
+    kitty_api = client.KittySplitAPI(kitty_url)
     kitty_api.select_user(kitty_username)
 
     # calculate weight mapping
@@ -104,7 +86,7 @@ def add_expenses(
     )
     print()
     print("Check your expenses! Will open your kitty...")
-    typer.launch(f"https://kittysplit.de/{kitty_id}/entries/")
+    typer.launch(f"https://kittysplit.de/{kitty_api.kitty_id}/entries/")
 
 
 if __name__ == "__main__":

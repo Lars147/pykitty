@@ -1,9 +1,25 @@
 from datetime import datetime
 from typing import Dict, Union
+from urllib.parse import urlparse
 
 import requests
 
 from pykitty import kitty_parser
+
+
+def parse_kitty_id(kitty_url) -> str:
+    kitty_url_parser = urlparse(kitty_url)
+
+    if "kittysplit." not in kitty_url_parser.netloc:
+        raise ValueError("Invalid Domain! Must be a kittysplit domain.")
+
+    kitty_url_parts = kitty_url_parser.path.split(
+        "/"
+    )  # e.g. ['', 'test_kitty', 'QRMCYapVh-2', 'entries']
+    if len(kitty_url_parts) < 3:
+        raise ValueError("Invalid URL! Must be a Kittysplit URL.")
+
+    return f"{kitty_url_parts[1]}/{kitty_url_parts[2]}"
 
 
 def get_csrf_token(
@@ -42,8 +58,8 @@ def kitty_endpoint(path, method: str = "GET", csrf_protected: bool = False):
 class KittySplitAPI:
     base_url = "https://kittysplit.de/"
 
-    def __init__(self, kitty_id: str) -> None:
-        self.kitty_id: str = kitty_id[:-1] if kitty_id.endswith("/") else kitty_id
+    def __init__(self, kitty_url: str) -> None:
+        self.kitty_id = parse_kitty_id(kitty_url)
         self.session: requests.Session = requests.Session()
         self.available_users: Dict[str, str] = self.get_users()
         self.selected_viewing_party_id: Union[str, None] = None

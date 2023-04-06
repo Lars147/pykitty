@@ -12,14 +12,19 @@ pip install pykitty
 
 ## Usage
 
-1. Open a kitty on https://kittysplit.de/
-2. Once opened, you can extract your `kitty_id` from the URL, e.g. `test_kitty/ADLKFJLAKD.../` in https://kittysplit.de/test_kitty/ADLKFJLAKD.../
+1. Open a kitty on https://kittysplit.de/ and set a username
+2. Once opened, copy the full Kittysplit URL, e.g. `https://kittysplit.de/test_kitty/ADLKFJLAKD.../`
 
-Create an instance of the `KittySplitAPI` class with the Kitty ID:
+Create your first expense with the following code (replace `<kitty_URL>` and `<your_username>`):
 
 ```python
 from pykitty import KittySplitAPI
-api = KittySplitAPI("your_kitty_id")
+api = KittySplitAPI("<kitty_URL>")
+api.select_user("<your_username>")
+api.add_expense(
+    amount="10.00",
+    description="A warm welcome by pykitty!",
+)
 ```
 
 ### Get Users
@@ -50,12 +55,30 @@ To add an expense, use the `add_expense` method:
 api.add_expense(
     amount="10.00",
     description="Lunch",
-    entry_date="2023-03-29",
-    weight_mapping={"username1": 0.6, "username2": 0.4},  # optional, if not specified, expense will be split evenly
 )
 ```
 
 This method will add a new expense with the specified details.
+
+With the `entry_date` parameter, you can specify the date of the expense:
+
+```python
+api.add_expense(
+    amount="10.00",
+    description="Lunch",
+    entry_date="2023-03-29",
+)
+```
+
+With the `weight_mapping` parameter, you can specify how much each user should pay for the expense. The sum of the weights must be `1`.
+
+```python
+api.add_expense(
+    amount="10.00",
+    description="Lunch",
+    weight_mapping={"username1": 0.6, "username2": 0.4},
+)
+```
 
 ## License
 
@@ -63,7 +86,8 @@ This project is licensed under the MIT License.
 
 ## Next Steps (TODO)
 
-- [ ] Add Kitty URL parser to extract `kitty_id` and language from any kittysplit URL
+- [x] Parse Kitty URL parser to extract `kitty_id` 
 - [ ] Implement `get_expenses` method to retrieve all expenses.
 - [ ] Add support for updating and deleting expenses.
 - [ ] Document CLI usage.
+- [ ] Support for Kittysplit in other languages.
