@@ -8,14 +8,14 @@ from pykitty.client import KittySplitAPI
 
 class TestKittySplitAPI(unittest.TestCase):
     def setUp(self):
-        self.kitty_id = "test-kitty-id"
+        self.kitty_url = "https://kittysplit.de/test_kitty/ADLKFJLAKD/"
         self.username = "test-user"
 
     @patch.object(KittySplitAPI, "get_users")
     def test_init(self, mock_get_users):
         mock_get_users.return_value = {"test-user1": "1", "test-user2": "2"}
-        api = KittySplitAPI(self.kitty_id)
-        self.assertEqual(api.kitty_id, self.kitty_id)
+        api = KittySplitAPI(self.kitty_url)
+        self.assertEqual(api.kitty_id, "test_kitty/ADLKFJLAKD")
         self.assertEqual(api.available_users, {"test-user1": "1", "test-user2": "2"})
         self.assertIsNone(api.selected_viewing_party_id)
 
@@ -38,9 +38,9 @@ class TestKittySplitAPI(unittest.TestCase):
         expected_users = {"test-user1": "1", "test-user2": "2"}
         mock_parser = MagicMock()
         mock_parser.usernames = [(id, name) for name, id in expected_users.items()]
-        api = KittySplitAPI(self.kitty_id)
+        api = KittySplitAPI(self.kitty_url)
         users = api.get_users()
         self.assertEqual(users, expected_users)
         mock_get.assert_called_with(
-            "GET", api.base_url + self.kitty_id + "/entries/", data=None
+            "GET", api.base_url + api.kitty_id + "/entries/", data=None
         )
