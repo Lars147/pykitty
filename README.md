@@ -80,6 +80,11 @@ api.add_expense(
 )
 ```
 
+### Get Expenses
+```python
+api.get_expenses()
+```
+
 ## License
 
 This project is licensed under the MIT License.
@@ -87,7 +92,7 @@ This project is licensed under the MIT License.
 ## Next Steps (TODO)
 
 - [x] Parse Kitty URL parser to extract `kitty_id` 
-- [ ] Implement `get_expenses` method to retrieve all expenses.
+- [x] Implement `get_expenses` method to retrieve all expenses.
 - [ ] Add support for updating and deleting expenses.
 - [ ] Document CLI usage.
 - [ ] Support for Kittysplit in other languages.
