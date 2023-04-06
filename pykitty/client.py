@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, Union
+from typing import Dict, List, Union
 from urllib.parse import urlparse
 
 import requests
@@ -103,6 +103,11 @@ class KittySplitAPI:
             csrf_token=kwargs.pop("csrf_token"),
             data=form_data,
         )
+
+    @kitty_endpoint("/entries/")
+    def get_expenses(self, **kwargs) -> List[dict]: 
+        response = self._request(kwargs.pop("method"), kwargs.pop("path"))
+        return kitty_parser.parse_expenses(response.text)
 
     @kitty_endpoint("/entries/new/expense/", method="POST", csrf_protected=True)
     def add_expense(
