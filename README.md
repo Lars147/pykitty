@@ -1,6 +1,6 @@
 # PyKitty
 
-This Python SDK allows you to interact with [KittySplit](www.kittysplit.de/) to manage expenses in a group. You can fetch a list of users, select a user and add expenses.
+This Python SDK allows you to interact with [KittySplit](https://kittysplit.de/) to manage expenses in a group. You can fetch a list of users, select a user and add expenses.
 
 ## Installation
 
