@@ -1,0 +1,15 @@
+name: Deploy Function
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+    coverage:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Upload coverage reports to Codecov
+              uses: codecov/codecov-action@v3
+    
