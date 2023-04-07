@@ -1,5 +1,8 @@
+import re
 from html.parser import HTMLParser
 from typing import List, Tuple, Union
+
+from bs4 import BeautifulSoup
 
 
 class CSRFHTMLParser(HTMLParser):
@@ -46,3 +49,36 @@ class KittySplitUserParser(HTMLParser):
             self.usernames.append((self.viewing_party_id, data.strip()))
             self.viewing_party_id = None
             self.in_form = False
+
+
+def parse_expenses(html: str) -> List[dict]:
+    soup = BeautifulSoup(html, "html.parser")
+    entries = []
+
+    for li in soup.find_all(
+        "li", class_="entry-list-item list-item entry-all entry-yours"
+    ):
+        entry = {}
+        entry_link = li.find("a", class_="entry-link")
+        entry["url"] = entry_link["href"]
+
+        entry_info = entry_link.find("div", class_="col-xs-12").text.strip()
+        buyer, amount, description = re.search(
+            r"^(.*) (?:paid|hat) €(.*?) (?:for|für) (.*)", entry_info
+        ).groups()
+        entry["buyer"] = buyer.strip()
+        entry["price"] = {"currency": "€", "amount": amount.replace(",", ".").strip()}
+        entry["description"] = description.replace(" bezahlt.", "").strip()
+
+        participants_text = entry_link.find(
+            "span", class_="entry-label entry-label-parties"
+        ).text.strip()
+        participants = participants_text.split(": ")[1]
+        if participants in ["Alle.", "everyone."]:
+            entry["participants"] = "all"
+        else:
+            entry["participants"] = participants_text.split(": ")[1]
+
+        entries.append(entry)
+
+    return entries

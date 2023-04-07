@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, Union
+from typing import Dict, List, Union
 from urllib.parse import urlparse
 
 import requests
@@ -31,9 +31,17 @@ def get_csrf_token(
     return csrf_parser.csrf_token
 
 
-def kitty_endpoint(path, method: str = "GET", csrf_protected: bool = False):
+def kitty_endpoint(
+    path,
+    method: str = "GET",
+    csrf_protected: bool = False,
+    user_needs_to_be_selected: bool = False,
+):
     def decorator(func):
         def wrapper(self, *args, **kwargs):
+            if user_needs_to_be_selected and self.selected_viewing_party_id is None:
+                raise ValueError("No user selected!")
+
             kwargs.update(
                 {
                     "path": path,
@@ -104,7 +112,17 @@ class KittySplitAPI:
             data=form_data,
         )
 
-    @kitty_endpoint("/entries/new/expense/", method="POST", csrf_protected=True)
+    @kitty_endpoint("/entries/", user_needs_to_be_selected=True)
+    def get_expenses(self, **kwargs) -> List[dict]:
+        response = self._request(kwargs.pop("method"), kwargs.pop("path"))
+        return kitty_parser.parse_expenses(response.text)
+
+    @kitty_endpoint(
+        "/entries/new/expense/",
+        method="POST",
+        csrf_protected=True,
+        user_needs_to_be_selected=True,
+    )
     def add_expense(
         self,
         amount: str,
