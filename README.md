@@ -93,6 +93,8 @@ This project is licensed under the MIT License.
 
 - [x] Parse Kitty URL to extract `kitty_id` 
 - [x] Implement `get_expenses` method to retrieve all expenses.
-- [ ] Add support for updating and deleting expenses.
+- [x] Add support for deleting expenses.
+- [ ] Enhance test coverage.
+- [ ] Add support for updating expenses.
 - [ ] Document CLI usage.
 - [ ] Support for Kittysplit in other languages.

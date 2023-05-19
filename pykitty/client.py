@@ -1,10 +1,14 @@
 from datetime import datetime
 from typing import Dict, List, Union
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 import requests
 
 from pykitty import kitty_parser
+
+
+def fill_query_params(query, *args):
+    return query.format(*[quote(arg, safe='') for arg in args])
 
 
 def parse_kitty_id(kitty_url) -> str:
@@ -125,6 +129,19 @@ class KittySplitAPI:
             expense["url"] = self.base_url + detail_url
 
         return expenses
+
+
+    @kitty_endpoint(
+        "/entries/{}/delete",
+        method="POST",
+        csrf_protected=True,
+        user_needs_to_be_selected=True
+    )
+    def delete_expense(self, entry_id: str, **kwargs) -> None:
+        self._request(
+            kwargs.pop("method"),
+            fill_query_params(kwargs.pop("path"), entry_id)
+        )
 
     @kitty_endpoint(
         "/entries/new/expense/",
