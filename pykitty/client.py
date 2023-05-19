@@ -130,6 +130,14 @@ class KittySplitAPI:
 
         return expenses
 
+    @kitty_endpoint("/entries/{}/edit", user_needs_to_be_selected=True)
+    def get_expense(self, entry_id: str, **kwargs) -> dict:
+        response = self._request(
+            kwargs.pop("method"), fill_query_params(kwargs.pop("path"), entry_id)
+        )
+
+        parsed_flat_expense_detail = kitty_parser.parse_expense(response.text)
+        return kitty_parser.parse_flat_expense_detail(parsed_flat_expense_detail)
 
     @kitty_endpoint(
         "/entries/{}/delete",
