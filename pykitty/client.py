@@ -8,7 +8,7 @@ from pykitty import kitty_parser
 
 
 def fill_query_params(query, *args):
-    return query.format(*[quote(arg, safe='') for arg in args])
+    return query.format(*[quote(arg, safe="") for arg in args])
 
 
 def parse_kitty_id(kitty_url) -> str:
@@ -135,12 +135,11 @@ class KittySplitAPI:
         "/entries/{}/delete",
         method="POST",
         csrf_protected=True,
-        user_needs_to_be_selected=True
+        user_needs_to_be_selected=True,
     )
     def delete_expense(self, entry_id: str, **kwargs) -> None:
         self._request(
-            kwargs.pop("method"),
-            fill_query_params(kwargs.pop("path"), entry_id)
+            kwargs.pop("method"), fill_query_params(kwargs.pop("path"), entry_id)
         )
 
     @kitty_endpoint(

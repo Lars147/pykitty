@@ -1,6 +1,7 @@
 import unittest
 
-from pykitty.kitty_parser import CSRFHTMLParser, KittySplitUserParser, parse_expenses
+from pykitty.kitty_parser import (CSRFHTMLParser, KittySplitUserParser,
+                                  parse_expenses)
 
 
 class TestCSRFHTMLParser(unittest.TestCase):
@@ -45,7 +46,9 @@ class TestKittySplitUserParser(unittest.TestCase):
     def test_handle_starttag_with_input(self):
         parser = KittySplitUserParser()
         parser.in_form = True
-        parser.handle_starttag("input", [("name", "viewing_party_id"), ("value", "1234")])
+        parser.handle_starttag(
+            "input", [("name", "viewing_party_id"), ("value", "1234")]
+        )
         self.assertEqual(parser.party_ids, ["1234"])
 
     def test_handle_starttag_with_button(self):
