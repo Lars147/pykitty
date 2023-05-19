@@ -115,7 +115,16 @@ class KittySplitAPI:
     @kitty_endpoint("/entries/", user_needs_to_be_selected=True)
     def get_expenses(self, **kwargs) -> List[dict]:
         response = self._request(kwargs.pop("method"), kwargs.pop("path"))
-        return kitty_parser.parse_expenses(response.text)
+        expenses = kitty_parser.parse_expenses(response.text)
+
+        # add base url to detail expense pages
+        for expense in expenses:
+            detail_url = expense["url"]
+            if detail_url.startswith("/"):  # remove leading slash
+                detail_url = detail_url[1:]
+            expense["url"] = self.base_url + detail_url
+
+        return expenses
 
     @kitty_endpoint(
         "/entries/new/expense/",
