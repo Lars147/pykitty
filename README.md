@@ -85,6 +85,17 @@ api.add_expense(
 api.get_expenses()
 ```
 
+### Get Single Expenses Details
+```python
+api.get_expense("8233711")  # expense_id can be found in URL
+```
+
+
+### Delete Expense
+```python
+api.delete_expense("8233711")  # expense_id can be found in URL
+```
+
 ## License
 
 This project is licensed under the MIT License.
