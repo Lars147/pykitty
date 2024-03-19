@@ -47,7 +47,7 @@ jobs:
             - name: Run tests
               run: |
                 poetry run coverage run -m unittest discover tests       
-                coverage report
+                poetry run coverage report
             #----------------------------------------------
             #              upload coverage report
             #----------------------------------------------
