@@ -21,18 +21,18 @@ jobs:
                 python-version: 3.8
             - name: Install Poetry Action
               uses: snok/install-poetry@v1.3.4
-          #----------------------------------------------
-          #       load cached venv if cache exists
-          #----------------------------------------------
+            #----------------------------------------------
+            #       load cached venv if cache exists
+            #----------------------------------------------
             - name: Load cached venv
               id: cached-poetry-dependencies
               uses: actions/cache@v3
               with:
                 path: .venv
                 key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-          #----------------------------------------------
-          # install dependencies if cache does not exist
-          #----------------------------------------------
+            #----------------------------------------------
+            # install dependencies if cache does not exist
+            #----------------------------------------------
             - name: Install dependencies
               if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
               run: poetry install --no-interaction --no-root
@@ -46,8 +46,7 @@ jobs:
             #----------------------------------------------
             - name: Run tests
               run: |
-                source .venv/bin/activate
-                pytest tests/
+                poetry run coverage run -m unittest discover tests       
                 coverage report
             #----------------------------------------------
             #              upload coverage report
