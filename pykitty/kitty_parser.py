@@ -197,17 +197,19 @@ def parse_expenses(html: str) -> List[dict]:
     soup = BeautifulSoup(html, "html.parser")
     entries = []
 
-    for li in soup.find_all(
-        "li", class_="entry-list-item list-item entry-all entry-yours"
-    ):
+    for li in soup.find_all("li", class_="py-1 entry-list-item entry-all entry-yours"):
         entry = {}
         entry_link = li.find("a", class_="entry-link")
         entry["url"] = entry_link["href"]
 
-        entry_info = entry_link.find("div", class_="col-xs-12").text.strip()
-        buyer, amount, description = re.search(
+        entry_info = entry_link.find("div", class_="col-xs-11").text.strip()
+        expense_pattern = re.search(
             r"^(.*) (?:paid|hat) €(.*?) (?:for|für) (.*)", entry_info
-        ).groups()
+        )
+        if not expense_pattern:
+            print(f"Could not parse entry: {entry_info}")
+            continue
+        buyer, amount, description = expense_pattern.groups()
         entry["buyer"] = buyer.strip()
         entry["price"] = {"currency": "€", "amount": amount.replace(",", ".").strip()}
         entry["description"] = description.replace(" bezahlt.", "").strip()
