@@ -237,6 +237,14 @@ def parse_expenses(html: str, expense_type: ExpenseType) -> List[dict]:
         ).text.strip()
         entry["date"] = date_text
 
+        share_text = entry_link.find(
+            "span", class_="entry-label entry-label-share accent-color-primary"
+        )
+        if share_text:
+            entry["share"] = (
+                share_text.text.strip().split(": ")[1].replace("€", "").strip()
+            )
+
         participants_text = entry_link.find(
             "span", class_="entry-label entry-label-parties"
         ).text.strip()
