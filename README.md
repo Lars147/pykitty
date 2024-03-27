@@ -32,20 +32,18 @@ api.add_expense(
 To fetch a list of users, use the `get_users` method:
 
 ```python
-users = api.get_users()
+api.get_users()  # {"user1": "3451816", "user2": "7167080"}
 ```
 
 This will return a dictionary with usernames as keys and user IDs as values.
 
 ### Select User
 
-To select a user, use the `select_user` method:
+You have to select an user of the KittySplit. Use the `select_user` method to set your user:
 
 ```python
-api.select_user("username")
+api.select_user("<your_username>")
 ```
-
-This method will set the `selected_viewing_party_id` attribute to the ID of the specified user.
 
 ### Add Expense
 
@@ -82,9 +80,14 @@ api.add_expense(
 
 ### Get Expenses
 ```python
-api.get_expenses()
+api.get_expenses()  # list all expenses
 ```
-
+```python
+api.get_expenses("yours")  # list expenses you paid
+```
+```python
+api.get_expenses("others")  # list expenses others have paid
+```
 ### Get Single Expenses Details
 ```python
 api.get_expense("8233711")  # expense_id can be found in URL
