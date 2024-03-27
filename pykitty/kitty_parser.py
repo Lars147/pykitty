@@ -214,6 +214,11 @@ def parse_expenses(html: str) -> List[dict]:
         entry["price"] = {"currency": "€", "amount": amount.replace(",", ".").strip()}
         entry["description"] = description.replace(" bezahlt.", "").strip()
 
+        date_text = entry_link.find(
+            "span", class_="entry-label entry-label-date"
+        ).text.strip()
+        entry["date"] = date_text
+
         participants_text = entry_link.find(
             "span", class_="entry-label entry-label-parties"
         ).text.strip()
