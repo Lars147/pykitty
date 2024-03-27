@@ -1,7 +1,6 @@
 import unittest
 
-from pykitty.kitty_parser import (CSRFHTMLParser, KittySplitUserParser,
-                                  parse_expenses)
+from pykitty.kitty_parser import CSRFHTMLParser, KittySplitUserParser, parse_expenses
 
 
 class TestCSRFHTMLParser(unittest.TestCase):
@@ -81,12 +80,18 @@ class TestParseExpenses(unittest.TestCase):
     def test_parse_expenses(self):
         german_html = """
         <html>
+
         <ul class="entries list-unstyled">
-            <li class="entry-list-item list-item entry-all entry-yours">
+            <li class="py-1 entry-list-item entry-all entry-yours">
                 <a class="entry-link" href="/test_kitty/ADLKFJLAKD/entries/8233980/edit">
                     <div class="row">
-                        <div class="col-xs-12">
+                        <div class="col-xs-11">
                             Test User hat <span class="currency"><span class="currency-symbol">€</span>23,57</span> für EDEKA Muenchen DE bezahlt.
+                        </div>
+                        <div class="col-xs-1">
+                            <div class="edit-entry">
+                                <i class="fa-icon fas fa-edit text-muted"></i>
+                            </div>
                         </div>
                     </div>
                     <div class="row">
@@ -102,11 +107,16 @@ class TestParseExpenses(unittest.TestCase):
                     </div>
                 </a>
             </li>
-            <li class="entry-list-item list-item entry-all entry-yours">
+            <li class="py-1 entry-list-item entry-all entry-yours">
                 <a class="entry-link" href="/test_kitty/ADLKFJLAKD/entries/8233979/edit">
                     <div class="row">
-                        <div class="col-xs-12">
+                        <div class="col-xs-11">
                             Test User hat <span class="currency"><span class="currency-symbol">€</span>0,85</span> für Backstube Muenchen DE bezahlt.
+                        </div>
+                        <div class="col-xs-1">
+                            <div class="edit-entry">
+                                <i class="fa-icon fas fa-edit text-muted"></i>
+                            </div>
                         </div>
                     </div>
                     <div class="row">
@@ -130,11 +140,16 @@ class TestParseExpenses(unittest.TestCase):
         english_html = """
         <html>
         <ul class="entries list-unstyled">
-            <li class="entry-list-item list-item entry-all entry-yours">
+            <li class="py-1 entry-list-item entry-all entry-yours">
                 <a class="entry-link" href="/test_kitty/ADLKFJLAKD/entries/8233980/edit">
                     <div class="row">
-                        <div class="col-xs-12">
+                        <div class="col-xs-11">
                             Test User paid <span class="currency"><span class="currency-symbol">€</span>23.57</span> for EDEKA Muenchen DE
+                        </div>
+                        <div class="col-xs-1">
+                            <div class="edit-entry">
+                                <i class="fa-icon fas fa-edit text-muted"></i>
+                            </div>
                         </div>
                     </div>
                     <div class="row">
@@ -150,11 +165,16 @@ class TestParseExpenses(unittest.TestCase):
                     </div>
                 </a>
             </li>
-            <li class="entry-list-item list-item entry-all entry-yours">
+            <li class="py-1 entry-list-item entry-all entry-yours">
                 <a class="entry-link" href="/test_kitty/ADLKFJLAKD/entries/8233979/edit">
                     <div class="row">
-                        <div class="col-xs-12">
+                        <div class="col-xs-11">
                             Test User paid <span class="currency"><span class="currency-symbol">€</span>0.85</span> for Backstube Muenchen DE
+                        </div>
+                        <div class="col-xs-1">
+                            <div class="edit-entry">
+                                <i class="fa-icon fas fa-edit text-muted"></i>
+                            </div>
                         </div>
                     </div>
                     <div class="row">
