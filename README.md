@@ -102,7 +102,7 @@ This project is licensed under the MIT License.
 
 ## Next Steps (TODO)
 
-- [x] Parse Kitty URL to extract `kitty_id` 
+- [x] Parse Kitty URL to extract `kitty_id`
 - [x] Implement `get_expenses` method to retrieve all expenses.
 - [x] Add support for deleting expenses.
 - [ ] Enhance test coverage.

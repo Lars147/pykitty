@@ -195,9 +195,9 @@ class KittySplitAPI:
             form_data[f"entry[entry_shares][{idx}][involved?]"] = "true"
             form_data[f"entry[entry_shares][{idx}][number_of_people]"] = ""
             form_data[f"entry[entry_shares][{idx}][number_of_people]"] = "1.0"
-            form_data[
-                f"entry[entry_shares][{idx}][number_of_people_string]"
-            ] = "1 person"
+            form_data[f"entry[entry_shares][{idx}][number_of_people_string]"] = (
+                "1 person"
+            )
             form_data[f"entry[entry_shares][{idx}][party_id]"] = viewing_party_id
             form_data[f"entry[entry_shares][{idx}][share_display]"] = ""
             form_data[f"entry[entry_shares][{idx}][share_str]"] = str(
