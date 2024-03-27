@@ -244,7 +244,7 @@ def parse_expenses(html: str, expense_type: ExpenseType) -> List[dict]:
         if participants in ["Alle.", "everyone."]:
             entry["participants"] = "all"
         else:
-            entry["participants"] = participants_text.split(": ")[1]
+            entry["participants"] = participants_text.split(": ")[1].strip(".")
 
         entries.append(entry)
 
