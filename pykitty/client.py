@@ -117,9 +117,13 @@ class KittySplitAPI:
         )
 
     @kitty_endpoint("/entries/", user_needs_to_be_selected=True)
-    def get_expenses(self, **kwargs) -> List[dict]:
+    def get_expenses(
+        self,
+        expense_type: kitty_parser.ExpenseType = kitty_parser.ExpenseType.ALL,
+        **kwargs,
+    ) -> List[dict]:
         response = self._request(kwargs.pop("method"), kwargs.pop("path"))
-        expenses = kitty_parser.parse_expenses(response.text)
+        expenses = kitty_parser.parse_expenses(response.text, expense_type=expense_type)
 
         # add base url to detail expense pages
         for expense in expenses:

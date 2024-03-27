@@ -1,8 +1,15 @@
 import re
+from enum import Enum
 from html.parser import HTMLParser
 from typing import List, Tuple, Union
 
 from bs4 import BeautifulSoup
+
+
+class ExpenseType(str, Enum):
+    ALL = "all"
+    YOURS = "yours"
+    OTHERS = "others"
 
 
 class CSRFHTMLParser(HTMLParser):
@@ -193,11 +200,22 @@ def parse_flat_expense_detail(parsed_flat_expense: dict) -> dict:
     return output_dict
 
 
-def parse_expenses(html: str) -> List[dict]:
+def parse_expenses(html: str, expense_type: ExpenseType) -> List[dict]:
     soup = BeautifulSoup(html, "html.parser")
     entries = []
 
-    for li in soup.find_all("li", class_="py-1 entry-list-item entry-all entry-yours"):
+    # construct the class filter based on the expense type
+    expense_class_filter = "py-1 entry-list-item entry-all"
+    if expense_type == ExpenseType.YOURS:
+        expense_class_filter += " entry-yours"
+    elif expense_type == ExpenseType.OTHERS:
+        expense_class_filter += " entry-others"
+    elif expense_type == ExpenseType.ALL:
+        expense_class_filter += " entry-yours|entry-others"
+    else:
+        raise ValueError(f"Invalid expense type: {expense_type}")
+
+    for li in soup.find_all("li", class_=re.compile(expense_class_filter)):
         entry = {}
         entry_link = li.find("a", class_="entry-link")
         entry["url"] = entry_link["href"]
