@@ -203,6 +203,7 @@ class TestParseExpenses(unittest.TestCase):
         expected_output_german = [
             {
                 "url": "/test_kitty/ADLKFJLAKD/entries/8233980/edit",
+                "id": "8233980",
                 "buyer": "Test User",
                 "price": {"currency": "€", "amount": "23.57"},
                 "description": "EDEKA Muenchen DE",
@@ -212,6 +213,7 @@ class TestParseExpenses(unittest.TestCase):
             },
             {
                 "url": "/test_kitty/ADLKFJLAKD/entries/8233979/edit",
+                "id": "8233979",
                 "buyer": "Test User",
                 "price": {"currency": "€", "amount": "0.85"},
                 "date": "27.03.2023",
@@ -223,6 +225,7 @@ class TestParseExpenses(unittest.TestCase):
         expected_output_english = [
             {
                 "url": "/test_kitty/ADLKFJLAKD/entries/8233980/edit",
+                "id": "8233980",
                 "buyer": "Test User",
                 "price": {"currency": "€", "amount": "23.57"},
                 "description": "EDEKA Muenchen DE",
@@ -232,6 +235,7 @@ class TestParseExpenses(unittest.TestCase):
             },
             {
                 "url": "/test_kitty/ADLKFJLAKD/entries/8233979/edit",
+                "id": "8233979",
                 "buyer": "Test User",
                 "price": {"currency": "€", "amount": "0.85"},
                 "date": "03/06/2023",

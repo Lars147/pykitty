@@ -2,6 +2,7 @@ import re
 from enum import Enum
 from html.parser import HTMLParser
 from typing import List, Tuple, Union
+from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
 
@@ -200,6 +201,17 @@ def parse_flat_expense_detail(parsed_flat_expense: dict) -> dict:
     return output_dict
 
 
+def get_expense_id_from_url(url: str) -> str:
+    parsed_url = urlparse(url)
+    path_segments = parsed_url.path.split("/")
+
+    # Assuming the ID is always after 'entries' in the URL path
+    id_index = path_segments.index("entries") + 1
+    entry_id = path_segments[id_index]
+
+    return entry_id
+
+
 def parse_expenses(html: str, expense_type: ExpenseType) -> List[dict]:
     soup = BeautifulSoup(html, "html.parser")
     entries = []
@@ -219,6 +231,7 @@ def parse_expenses(html: str, expense_type: ExpenseType) -> List[dict]:
         entry = {}
         entry_link = li.find("a", class_="entry-link")
         entry["url"] = entry_link["href"]
+        entry["id"] = get_expense_id_from_url(entry["url"])
 
         entry_info = entry_link.find("div", class_="col-xs-11").text.strip()
         expense_pattern = re.search(
