@@ -45,6 +45,9 @@ jobs:
             #              run test suite
             #----------------------------------------------
             - name: Run tests
+              env:
+                E2E_KITTY_URL: ${{ vars.E2E_KITTY_URL }}
+                E2E_KITTY_USERNAME: ${{ vars.E2E_KITTY_USERNAME }}
               run: |
                 poetry run coverage run -m unittest discover tests
                 poetry run coverage report -m
