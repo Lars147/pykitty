@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-    coverage:
+    testing_and_coverage_upload:
         runs-on: ubuntu-latest
 
         steps:
