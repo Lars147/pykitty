@@ -200,30 +200,52 @@ class TestParseExpenses(unittest.TestCase):
         </html>
         """
 
-        expected_output = [
+        expected_output_german = [
             {
                 "url": "/test_kitty/ADLKFJLAKD/entries/8233980/edit",
                 "buyer": "Test User",
-                "date": "27.03.2023",
                 "price": {"currency": "€", "amount": "23.57"},
-                "share": "11,79",
                 "description": "EDEKA Muenchen DE",
+                "date": "27.03.2023",
+                "share": "11.79",
                 "participants": "all",
             },
             {
                 "url": "/test_kitty/ADLKFJLAKD/entries/8233979/edit",
-                "date": "27.03.2023",
                 "buyer": "Test User",
                 "price": {"currency": "€", "amount": "0.85"},
-                "share": "0,43",
+                "date": "27.03.2023",
+                "share": "0.43",
+                "description": "Backstube Muenchen DE",
+                "participants": "all",
+            },
+        ]
+        expected_output_english = [
+            {
+                "url": "/test_kitty/ADLKFJLAKD/entries/8233980/edit",
+                "buyer": "Test User",
+                "price": {"currency": "€", "amount": "23.57"},
+                "description": "EDEKA Muenchen DE",
+                "date": "03/06/2023",
+                "share": "4.47",
+                "participants": "all",
+            },
+            {
+                "url": "/test_kitty/ADLKFJLAKD/entries/8233979/edit",
+                "buyer": "Test User",
+                "price": {"currency": "€", "amount": "0.85"},
+                "date": "03/06/2023",
+                "share": "13.10",
                 "description": "Backstube Muenchen DE",
                 "participants": "all",
             },
         ]
 
         self.assertEqual(
-            parse_expenses(german_html, expense_type=ExpenseType.ALL), expected_output
+            parse_expenses(german_html, expense_type=ExpenseType.ALL),
+            expected_output_german,
         )
         self.assertEqual(
-            parse_expenses(english_html, expense_type=ExpenseType.ALL), expected_output
+            parse_expenses(english_html, expense_type=ExpenseType.ALL),
+            expected_output_english,
         )
