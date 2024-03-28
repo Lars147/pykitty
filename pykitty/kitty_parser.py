@@ -242,7 +242,11 @@ def parse_expenses(html: str, expense_type: ExpenseType) -> List[dict]:
         )
         if share_text:
             entry["share"] = (
-                share_text.text.strip().split(": ")[1].replace("€", "").strip()
+                share_text.text.strip()
+                .split(": ")[1]
+                .replace("€", "")
+                .replace(",", ".")
+                .strip()
             )
 
         participants_text = entry_link.find(
