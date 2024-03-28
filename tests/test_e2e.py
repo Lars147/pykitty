@@ -1,5 +1,6 @@
 import os
 import unittest
+from datetime import datetime
 
 from pykitty.client import KittySplitAPI
 
@@ -30,10 +31,9 @@ class TestKittySplitAPIE2E(unittest.TestCase):
         api.add_expense(
             amount="10.00",
             description=self.test_expense_description,
-            date="2022-01-01",
         )
 
-        # find the expense we just added
+        # find the expense we just added in the list of expenses
         expenses = api.get_expenses()
         expense_created = [
             expense
@@ -45,8 +45,16 @@ class TestKittySplitAPIE2E(unittest.TestCase):
         self.assertEqual(expense_created["price"]["amount"], "10.00")
         self.assertEqual(expense_created["share"], "5.00")
         self.assertEqual(expense_created["participants"], "all")
-        self.assertEqual(expense_created["date"], "03/28/2024")
+        self.assertEqual(expense_created["date"], datetime(2024, 3, 28))
 
+        # get the detailed expense
+        detailed_expense = api.get_expense(expense_created["id"])
+
+        self.assertEqual(detailed_expense["entry_type"], "expense")
+        self.assertEqual(detailed_expense["description"], self.test_expense_description)
+        self.assertEqual(detailed_expense["party_id"], api.selected_viewing_party_id)
+
+        # delete the expense
         api.delete_expense(expense_created["id"])
 
         # make sure the expense was deleted

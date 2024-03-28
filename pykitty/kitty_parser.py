@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 from enum import Enum
 from html.parser import HTMLParser
 from typing import List, Tuple, Union
@@ -11,6 +12,17 @@ class ExpenseType(str, Enum):
     ALL = "all"
     YOURS = "yours"
     OTHERS = "others"
+
+
+def parse_kitty_date_string(date_str):
+    formats = ["%Y-%m-%d", "%m/%d/%Y", "%d.%m.%Y"]
+
+    for date_format in formats:
+        try:
+            return datetime.strptime(date_str, date_format)
+        except ValueError:
+            continue
+    raise ValueError(f"Date {date_str} is not in a recognized format.")
 
 
 class CSRFHTMLParser(HTMLParser):
@@ -248,7 +260,7 @@ def parse_expenses(html: str, expense_type: ExpenseType) -> List[dict]:
         date_text = entry_link.find(
             "span", class_="entry-label entry-label-date"
         ).text.strip()
-        entry["date"] = date_text
+        entry["date"] = parse_kitty_date_string(date_text)
 
         share_text = entry_link.find(
             "span", class_="entry-label entry-label-share accent-color-primary"

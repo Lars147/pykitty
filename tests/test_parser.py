@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime
 
 from pykitty.kitty_parser import (
     CSRFHTMLParser,
@@ -207,7 +208,7 @@ class TestParseExpenses(unittest.TestCase):
                 "buyer": "Test User",
                 "price": {"currency": "€", "amount": "23.57"},
                 "description": "EDEKA Muenchen DE",
-                "date": "27.03.2023",
+                "date": datetime(2023, 3, 27),
                 "share": "11.79",
                 "participants": "all",
             },
@@ -216,7 +217,7 @@ class TestParseExpenses(unittest.TestCase):
                 "id": "8233979",
                 "buyer": "Test User",
                 "price": {"currency": "€", "amount": "0.85"},
-                "date": "27.03.2023",
+                "date": datetime(2023, 3, 27),
                 "share": "0.43",
                 "description": "Backstube Muenchen DE",
                 "participants": "all",
@@ -229,7 +230,7 @@ class TestParseExpenses(unittest.TestCase):
                 "buyer": "Test User",
                 "price": {"currency": "€", "amount": "23.57"},
                 "description": "EDEKA Muenchen DE",
-                "date": "03/06/2023",
+                "date": datetime(2023, 3, 6),
                 "share": "4.47",
                 "participants": "all",
             },
@@ -238,7 +239,7 @@ class TestParseExpenses(unittest.TestCase):
                 "id": "8233979",
                 "buyer": "Test User",
                 "price": {"currency": "€", "amount": "0.85"},
-                "date": "03/06/2023",
+                "date": datetime(2023, 3, 6),
                 "share": "13.10",
                 "description": "Backstube Muenchen DE",
                 "participants": "all",
