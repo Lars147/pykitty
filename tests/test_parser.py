@@ -1,6 +1,11 @@
 import unittest
 
-from pykitty.kitty_parser import CSRFHTMLParser, KittySplitUserParser, parse_expenses
+from pykitty.kitty_parser import (
+    CSRFHTMLParser,
+    ExpenseType,
+    KittySplitUserParser,
+    parse_expenses,
+)
 
 
 class TestCSRFHTMLParser(unittest.TestCase):
@@ -199,18 +204,26 @@ class TestParseExpenses(unittest.TestCase):
             {
                 "url": "/test_kitty/ADLKFJLAKD/entries/8233980/edit",
                 "buyer": "Test User",
+                "date": "27.03.2023",
                 "price": {"currency": "€", "amount": "23.57"},
+                "share": "11,79",
                 "description": "EDEKA Muenchen DE",
                 "participants": "all",
             },
             {
                 "url": "/test_kitty/ADLKFJLAKD/entries/8233979/edit",
+                "date": "27.03.2023",
                 "buyer": "Test User",
                 "price": {"currency": "€", "amount": "0.85"},
+                "share": "0,43",
                 "description": "Backstube Muenchen DE",
                 "participants": "all",
             },
         ]
 
-        self.assertEqual(parse_expenses(german_html), expected_output)
-        self.assertEqual(parse_expenses(english_html), expected_output)
+        self.assertEqual(
+            parse_expenses(german_html, expense_type=ExpenseType.ALL), expected_output
+        )
+        self.assertEqual(
+            parse_expenses(english_html, expense_type=ExpenseType.ALL), expected_output
+        )
