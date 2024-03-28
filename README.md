@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/Lars147/pykitty/graph/badge.svg?token=TOY40XZ1QU)](https://codecov.io/gh/Lars147/pykitty)
+
 # PyKitty
 
 This Python SDK allows you to interact with [KittySplit](https://kittysplit.de/) to manage expenses in a group. You can fetch a list of users, select a user and add expenses.
@@ -108,7 +110,7 @@ This project is licensed under the MIT License.
 - [x] Parse Kitty URL to extract `kitty_id`
 - [x] Implement `get_expenses` method to retrieve all expenses.
 - [x] Add support for deleting expenses.
-- [ ] Enhance test coverage.
+- [x] Enhance test coverage.
 - [ ] Add support for updating expenses.
 - [ ] Document CLI usage.
 - [ ] Support for Kittysplit in other languages.
