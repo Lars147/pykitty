@@ -31,6 +31,7 @@ class TestKittySplitAPIE2E(unittest.TestCase):
         api.add_expense(
             amount="10.00",
             description=self.test_expense_description,
+            entry_date="2024-03-28",
         )
 
         # find the expense we just added in the list of expenses
