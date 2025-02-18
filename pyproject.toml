@@ -13,7 +13,7 @@ pykitty = "pykitty.cli:app"
 python = "^3.8"
 requests = "2.32.0"
 typer = {version = "0.11.0", extras = ["all"]}
-beautifulsoup4 = "4.12.3"
+beautifulsoup4 = "4.13.3"
 
 [tool.poetry.group.dev.dependencies]
 black = ">=23.1,<25.0"
