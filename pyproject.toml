@@ -10,7 +10,7 @@ readme = "README.md"
 pykitty = "pykitty.cli:app"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 requests = "2.32.4"
 typer = "0.20.1"
 beautifulsoup4 = "4.15.0"
