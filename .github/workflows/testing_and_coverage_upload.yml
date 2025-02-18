@@ -20,7 +20,7 @@ jobs:
               with:
                 python-version: 3.8
             - name: Install Poetry Action
-              uses: snok/install-poetry@v1.3.4
+              uses: snok/install-poetry@v1.4.1
             #----------------------------------------------
             #       load cached venv if cache exists
             #----------------------------------------------
