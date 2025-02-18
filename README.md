@@ -1,8 +1,24 @@
+<!-- Codecov Coverage Badge -->
 [![codecov](https://codecov.io/gh/Lars147/pykitty/graph/badge.svg?token=TOY40XZ1QU)](https://codecov.io/gh/Lars147/pykitty)
+
+<!-- Sonar Cloud Quality Badge -->
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Lars147_pykitty&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Lars147_pykitty)
 
 # PyKitty
 
 This Python SDK allows you to interact with [KittySplit](https://kittysplit.de/) to manage expenses in a group. You can fetch a list of users, select a user and add expenses.
+
+## Table of Contents
+- [Installation](#installation)
+- [Usage](#usage)
+    - [Get Users](#get-users)
+    - [Select User](#select-user)
+    - [Add Expense](#add-expense)
+    - [Get Expenses](#get-expenses)
+    - [Get Single Expense Details](#get-single-expense-details)
+    - [Delete Expense](#delete-expense)
+- [License](#license)
+- [Next Steps (TODO)](#next-steps-todo)
 
 ## Installation
 
@@ -21,6 +37,7 @@ Create your first expense with the following code (replace `<kitty_URL>` and `<y
 
 ```python
 from pykitty import KittySplitAPI
+
 api = KittySplitAPI("<kitty_URL>")
 api.select_user("<your_username>")
 api.add_expense(
@@ -100,6 +117,15 @@ api.get_expense("8233711")  # expense_id can be found in URL
 ```python
 api.delete_expense("8233711")  # expense_id can be found in URL
 ```
+
+## Command Line Interface (CLI)
+
+### Get Users
+
+To install the CLI, you can use pip:
+
+```bash
+pip install kittysplit-cli
 
 ## License
 
