@@ -83,6 +83,39 @@ class TestKittySplitUserParser(unittest.TestCase):
 
 
 class TestParseExpenses(unittest.TestCase):
+    def test_current_expense_summary_and_participant_filters(self):
+        html = """
+            <li class="entry-list-item entry-all" data-paid-by-id="payer"
+                data-share-party-ids="payer,guest">
+                <a class="entry-link" href="/k/example-chooser/entries/example-expense">
+                    <div class="entry-main">Example One paid €10.00 for Example lunch</div>
+                    <span class="entry-label entry-label-date">03/28/2024</span>
+                    <span class="entry-label entry-label-share accent-color-primary">
+                        Your share: €5.00
+                    </span>
+                    <span class="entry-label entry-label-parties">
+                        People involved: <span>everyone</span>.
+                    </span>
+                </a>
+            </li>
+        """
+        expected = [
+            {
+                "url": "/k/example-chooser/entries/example-expense",
+                "id": "example-expense",
+                "buyer": "Example One",
+                "price": {"currency": "€", "amount": "10.00"},
+                "description": "Example lunch",
+                "date": datetime(2024, 3, 28),
+                "share": "5.00",
+                "participants": "all",
+            }
+        ]
+        self.assertEqual(parse_expenses(html, ExpenseType.ALL), expected)
+        self.assertEqual(parse_expenses(html, ExpenseType.YOURS, "guest"), expected)
+        self.assertEqual(parse_expenses(html, ExpenseType.OTHERS, "guest"), [])
+        self.assertEqual(parse_expenses(html, ExpenseType.OTHERS, "other"), expected)
+
     def test_parse_expenses(self):
         german_html = """
         <html>

@@ -10,7 +10,8 @@ on:
 
 jobs:
     testing_and_coverage_upload:
-        runs-on: ubuntu-latest
+        name: coverage
+        runs-on: ubuntu-24.04
 
         steps:
             - name: Checkout code
@@ -21,6 +22,8 @@ jobs:
                 python-version: 3.8
             - name: Install Poetry Action
               uses: snok/install-poetry@v1.3.4
+              with:
+                version: 1.8.2
             #----------------------------------------------
             #       load cached venv if cache exists
             #----------------------------------------------
@@ -46,9 +49,14 @@ jobs:
             #----------------------------------------------
             - name: Run tests
               env:
-                E2E_KITTY_URL: ${{ vars.E2E_KITTY_URL }}
-                E2E_KITTY_USERNAME: ${{ vars.E2E_KITTY_USERNAME }}
+                E2E_KITTY_ID: ${{ (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) && secrets.E2E_KITTY_ID || '' }}
+                E2E_KITTY_USERNAME: ${{ (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) && secrets.E2E_KITTY_USERNAME || '' }}
               run: |
+                if [ -z "$E2E_KITTY_ID" ] || [ -z "$E2E_KITTY_USERNAME" ]; then
+                  echo "::error::The live Kittysplit fixture secrets are unavailable for this run."
+                  exit 1
+                fi
+                export E2E_KITTY_URL="https://www.kittysplit.com/k/$E2E_KITTY_ID"
                 poetry run coverage run -m unittest discover tests
                 poetry run coverage report -m
                 poetry run coverage xml
