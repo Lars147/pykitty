@@ -46,7 +46,7 @@ class TestKittySplitAPI(unittest.TestCase):
         )
 
     @patch.object(requests.Session, "request")
-    def test_select_legacy_user(self, request):
+    def test_select_legacy_user_and_add_expense(self, request):
         chooser = MagicMock(
             text="""
             <form class="set-viewing-party">
@@ -56,7 +56,16 @@ class TestKittySplitAPI(unittest.TestCase):
         """
         )
         token_page = MagicMock(text='<input name="_csrf_token" value="example-token">')
-        request.side_effect = [chooser, token_page, MagicMock()]
+        expense_page = MagicMock(
+            text='<input name="_csrf_token" value="example-expense-token">'
+        )
+        request.side_effect = [
+            chooser,
+            token_page,
+            MagicMock(),
+            expense_page,
+            MagicMock(),
+        ]
 
         api = KittySplitAPI(self.kitty_url)
         api.select_user("Example One")
@@ -67,6 +76,15 @@ class TestKittySplitAPI(unittest.TestCase):
             data={"viewing_party_id": "1", "_csrf_token": "example-token"},
         )
         self.assertEqual(api.selected_viewing_party_id, "1")
+
+        api.add_expense("10.00", "Example lunch", entry_date="2024-03-28")
+
+        args, kwargs = request.call_args
+        self.assertEqual(
+            args, ("POST", f"{api.base_url}{api.kitty_id}/entries/new/expense/")
+        )
+        self.assertEqual(kwargs["data"]["entry[party_id]"], "1")
+        self.assertEqual(kwargs["data"]["_csrf_token"], "example-expense-token")
 
 
 class TestParticipantChooser(unittest.TestCase):
@@ -165,3 +183,48 @@ class TestParticipantChooser(unittest.TestCase):
 
         self.assertIsNone(api.selected_viewing_party_id)
         self.assertEqual(request.call_count, 3)
+
+    @patch.object(requests.Session, "request")
+    def test_chooser_for_another_kitty_is_ignored(self, request):
+        request.return_value = MagicMock(
+            text=self.chooser_html.replace(
+                "/k/example-chooser/parties/choose", "/k/other-chooser/parties/choose"
+            )
+        )
+
+        api = KittySplitAPI(self.kitty_url)
+        self.assertEqual(api.available_users, {})
+        with self.assertRaisesRegex(ValueError, "Example One not available"):
+            api.select_user("Example One")
+
+        self.assertIsNone(api.selected_viewing_party_id)
+        self.assertEqual(
+            request.call_args_list, [call("GET", self.chooser_url, data=None)] * 2
+        )
+
+    @patch.object(requests.Session, "request")
+    def test_delete_does_not_use_an_unrelated_forms_csrf_token(self, request):
+        chooser = MagicMock(text=self.chooser_html)
+        expense = MagicMock(
+            text="""
+            <form method="post" action="/k/example-chooser/entries/other-expense/delete">
+                <input type="hidden" name="_csrf_token" value="unrelated-example-token">
+            </form>
+        """
+        )
+        request.side_effect = [
+            chooser,
+            chooser,
+            MagicMock(text="", url=self.kitty_url),
+            expense,
+        ]
+        api = KittySplitAPI(self.kitty_url)
+        api.select_user("Example One")
+
+        with self.assertRaisesRegex(ValueError, "missing a CSRF token"):
+            api.delete_expense("example-expense")
+
+        request.assert_called_with(
+            "GET", f"{self.kitty_url}/entries/example-expense", data=None
+        )
+        self.assertEqual(request.call_count, 4)

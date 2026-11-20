@@ -116,6 +116,30 @@ class TestParseExpenses(unittest.TestCase):
         self.assertEqual(parse_expenses(html, ExpenseType.OTHERS, "guest"), [])
         self.assertEqual(parse_expenses(html, ExpenseType.OTHERS, "other"), expected)
 
+    def test_legacy_filter_preserves_named_participants(self):
+        html = """
+            <li class="py-1 entry-list-item entry-all entry-others">
+                <a class="entry-link" href="/test_kitty/example-chooser/entries/example-expense/edit">
+                    <div class="col-xs-11">Example One paid €10.00 for Example lunch</div>
+                    <span class="entry-label entry-label-date">03/28/2024</span>
+                    <span class="entry-label entry-label-parties">
+                        People involved: <span>Example One, Example Two</span>.
+                    </span>
+                </a>
+            </li>
+        """
+
+        entries = parse_expenses(html, ExpenseType.OTHERS, "example-viewer")
+
+        self.assertEqual(
+            [entry["participants"] for entry in entries], ["Example One, Example Two"]
+        )
+        self.assertEqual(parse_expenses(html, ExpenseType.YOURS, "example-viewer"), [])
+
+    def test_invalid_expense_type_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "Invalid expense type: unknown"):
+            parse_expenses("", "unknown")
+
     def test_parse_expenses(self):
         german_html = """
         <html>
