@@ -3,3 +3,4 @@ dist
 *.pyc
 .coverage
 .env
+.DS_Store
