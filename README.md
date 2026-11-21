@@ -17,6 +17,7 @@ This Python SDK allows you to interact with [KittySplit](https://kittysplit.de/)
     - [Get Expenses](#get-expenses)
     - [Get Single Expense Details](#get-single-expense-details)
     - [Delete Expense](#delete-expense)
+- [Releasing](#releasing)
 - [License](#license)
 - [Next Steps (TODO)](#next-steps-todo)
 
@@ -117,6 +118,39 @@ api.get_expense("8233711")  # expense_id can be found in URL
 ```python
 api.delete_expense("8233711")  # expense_id can be found in URL
 ```
+
+## Releasing
+
+`pyproject.toml` holds the package version. Use `poetry version patch`,
+`poetry version minor`, or `poetry version major` to bump it in a pull request.
+
+Before the first release, create the `pypi` environment under **Settings →
+Environments** in GitHub and allow deployments from tags matching `v*`. In
+[PyPI project settings](https://pypi.org/manage/project/pykitty/settings/publishing/),
+add a GitHub Trusted Publisher with these values.
+
+| Field | Value |
+| --- | --- |
+| Owner | `Lars147` |
+| Repository | `pykitty` |
+| Workflow name | `release.yml` |
+| Environment name | `pypi` |
+
+After merging the version bump and checking CI, tag the commit on `main` with
+the matching `vMAJOR.MINOR.PATCH` tag. For the first automated release, use the
+commit with version `0.4.0`.
+
+```bash
+git switch main
+git pull --ff-only
+git tag -a v0.4.0 -m "Release 0.4.0"
+git push origin v0.4.0
+```
+
+GitHub Actions checks the tag, tests the package, builds a wheel and source
+distribution, and uploads both via PyPI Trusted Publishing. It then creates a
+GitHub Release with generated notes. If the PyPI upload succeeds and the
+GitHub Release step fails, rerun the failed job from the same workflow run.
 
 ## License
 
