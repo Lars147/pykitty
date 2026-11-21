@@ -22,7 +22,7 @@ This Python SDK allows you to interact with [KittySplit](https://kittysplit.de/)
 
 ## Installation
 
-To install the package, use the following command:
+PyKitty requires Python 3.9 or newer. To install the package, run:
 
 ```bash
 pip install pykitty
@@ -107,7 +107,7 @@ api.get_expenses("yours")  # list expenses you paid
 ```python
 api.get_expenses("others")  # list expenses others have paid
 ```
-### Get Single Expenses Details
+### Get Single Expense Details
 ```python
 api.get_expense("8233711")  # expense_id can be found in URL
 ```
@@ -117,15 +117,6 @@ api.get_expense("8233711")  # expense_id can be found in URL
 ```python
 api.delete_expense("8233711")  # expense_id can be found in URL
 ```
-
-## Command Line Interface (CLI)
-
-### Get Users
-
-To install the CLI, you can use pip:
-
-```bash
-pip install kittysplit-cli
 
 ## License
 
