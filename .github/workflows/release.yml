@@ -2,18 +2,95 @@ name: Release
 
 on:
   push:
+    branches:
+      - main
+    paths:
+      - pyproject.toml
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
 
 permissions: {}
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ github.ref_type == 'tag' && github.ref || github.run_id }}
   cancel-in-progress: false
 
 jobs:
+  tag:
+    if: github.ref == 'refs/heads/main' && !github.event.deleted
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Determine release version
+        id: version
+        env:
+          PREVIOUS_SHA: ${{ github.event.before }}
+        run: |
+          python - <<'PY'
+          import os
+          import re
+          import subprocess
+          import tomllib
+          from pathlib import Path
+
+          def package_version(config):
+              return tomllib.loads(config)['tool']['poetry']['version']
+
+          version = package_version(Path('pyproject.toml').read_text(encoding='utf-8'))
+          if os.environ['GITHUB_EVENT_NAME'] == 'push':
+              previous_config = subprocess.check_output(
+                  ['git', 'show', f"{os.environ['PREVIOUS_SHA']}:pyproject.toml"],
+                  text=True,
+              )
+              if version == package_version(previous_config):
+                  print(f'Package version is still {version}.')
+                  raise SystemExit(0)
+
+          if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', version):
+              raise SystemExit(f'{version} must use the MAJOR.MINOR.PATCH format.')
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              print(f'tag=v{version}', file=output)
+          PY
+
+      - name: Create tag and start release
+        if: steps.version.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "$RELEASE_TAG already has a GitHub release."
+            exit 0
+          fi
+
+          tag_ref="refs/tags/$RELEASE_TAG"
+          if tagged_commit=$(git rev-parse --verify --quiet "$tag_ref^{commit}"); then
+            if [[ "$tagged_commit" != "$GITHUB_SHA" ]]; then
+              echo "::error::$RELEASE_TAG already points to $tagged_commit. Rerun the release for that tag or bump the version."
+              exit 1
+            fi
+          else
+            gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
+              -f "ref=$tag_ref" -f "sha=$GITHUB_SHA" --silent
+          fi
+
+          # GITHUB_TOKEN does not trigger workflows on tag creation.
+          gh workflow run release.yml --repo "$GITHUB_REPOSITORY" --ref "$RELEASE_TAG"
+
   build:
-    if: github.event.deleted == false
+    if: github.ref_type == 'tag' && !github.event.deleted
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -36,12 +113,15 @@ jobs:
 
           python - <<'PY'
           import os
+          import re
           import tomllib
           from pathlib import Path
 
           config = tomllib.loads(Path('pyproject.toml').read_text(encoding='utf-8'))
           expected_tag = f"v{config['tool']['poetry']['version']}"
           tag = os.environ['GITHUB_REF_NAME']
+          if not re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+', tag):
+              raise SystemExit(f'{tag} must use the vMAJOR.MINOR.PATCH format.')
           if tag != expected_tag:
               raise SystemExit(f'{tag} does not match the package version ({expected_tag}).')
           PY

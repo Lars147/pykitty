@@ -136,21 +136,15 @@ add a GitHub Trusted Publisher with these values.
 | Workflow name | `release.yml` |
 | Environment name | `pypi` |
 
-After merging the version bump and checking CI, tag the commit on `main` with
-the matching `vMAJOR.MINOR.PATCH` tag. For the first automated release, use the
-commit with version `0.4.0`.
+Merging a version bump into `main` creates the matching `vMAJOR.MINOR.PATCH`
+tag and starts the release. To release `0.4.0`, which is already on `main`,
+open **Actions → Release → Run workflow**, select `main`, and click
+**Run workflow** after completing the setup above.
 
-```bash
-git switch main
-git pull --ff-only
-git tag -a v0.4.0 -m "Release 0.4.0"
-git push origin v0.4.0
-```
-
-GitHub Actions checks the tag, tests the package, builds a wheel and source
-distribution, and uploads both via PyPI Trusted Publishing. It then creates a
-GitHub Release with generated notes. If the PyPI upload succeeds and the
-GitHub Release step fails, rerun the failed job from the same workflow run.
+The run for the tag checks the version, builds a wheel and source distribution,
+tests the package, and uploads both via PyPI Trusted Publishing. It then creates
+a GitHub Release with generated notes. If dispatch fails, rerun the tag job.
+If the run for the tag fails, rerun its failed jobs.
 
 ## License
 
