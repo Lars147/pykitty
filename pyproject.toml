@@ -11,9 +11,9 @@ pykitty = "pykitty.cli:app"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-requests = "2.32.0"
+requests = "2.32.4"
 typer = "0.20.1"
-beautifulsoup4 = "4.13.4"
+beautifulsoup4 = "4.15.0"
 
 [tool.poetry.group.dev.dependencies]
 black = ">=23.1,<25.0"
