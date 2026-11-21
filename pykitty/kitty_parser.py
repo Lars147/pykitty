@@ -2,7 +2,7 @@ import re
 from datetime import datetime
 from enum import Enum
 from html.parser import HTMLParser
-from typing import List, Tuple, Union
+from typing import Dict, List, Tuple, Union
 from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
@@ -69,6 +69,46 @@ class KittySplitUserParser(HTMLParser):
             self.usernames.append((self.viewing_party_id, data.strip()))
             self.viewing_party_id = None
             self.in_form = False
+
+
+def parse_participant_chooser(
+    html: str, kitty_id: str
+) -> Tuple[Dict[str, str], Union[str, None]]:
+    soup = BeautifulSoup(html, "html.parser")
+    form = soup.find("form", action=f"/{kitty_id}/parties/choose", method="post")
+    if form is None:
+        return {}, None
+
+    users = {}
+    party_action = re.compile(rf"/{re.escape(kitty_id)}/parties/([A-Za-z0-9_-]+)/set")
+    for button in form.select('button[type="submit"][formaction]'):
+        action = party_action.fullmatch(button["formaction"])
+        name = button.get_text(" ", strip=True)
+        if action and name:
+            users[name] = action.group(1)
+
+    return users, _form_csrf_token(form)
+
+
+def parse_guest_confirmation(html: str, action: str) -> Union[str, None]:
+    soup = BeautifulSoup(html, "html.parser")
+    form = soup.find("form", action=action, method="post")
+    if form is None or not form.select_one(
+        'input[type="hidden"][name="skip_account_prompt"][value="true"]'
+    ):
+        return None
+    return _form_csrf_token(form)
+
+
+def parse_form_csrf_token(html: str, action: str) -> Union[str, None]:
+    soup = BeautifulSoup(html, "html.parser")
+    form = soup.find("form", action=action, method="post")
+    return _form_csrf_token(form) if form is not None else None
+
+
+def _form_csrf_token(form) -> Union[str, None]:
+    token = form.select_one('input[type="hidden"][name="_csrf_token"]')
+    return token.get("value") if token else None
 
 
 def parse_expense(html: str) -> dict:
@@ -224,28 +264,24 @@ def get_expense_id_from_url(url: str) -> str:
     return entry_id
 
 
-def parse_expenses(html: str, expense_type: ExpenseType) -> List[dict]:
+def parse_expenses(
+    html: str, expense_type: ExpenseType, viewing_party_id: Union[str, None] = None
+) -> List[dict]:
+    if expense_type not in (ExpenseType.ALL, ExpenseType.YOURS, ExpenseType.OTHERS):
+        raise ValueError(f"Invalid expense type: {expense_type}")
+
     soup = BeautifulSoup(html, "html.parser")
     entries = []
 
-    # construct the class filter based on the expense type
-    expense_class_filter = "py-1 entry-list-item entry-all"
-    if expense_type == ExpenseType.YOURS:
-        expense_class_filter += " entry-yours"
-    elif expense_type == ExpenseType.OTHERS:
-        expense_class_filter += " entry-others"
-    elif expense_type == ExpenseType.ALL:
-        expense_class_filter += " entry-yours|entry-others"
-    else:
-        raise ValueError(f"Invalid expense type: {expense_type}")
-
-    for li in soup.find_all("li", class_=re.compile(expense_class_filter)):
+    for li in soup.select("li.entry-list-item.entry-all"):
+        if not _matches_expense_type(li, expense_type, viewing_party_id):
+            continue
         entry = {}
         entry_link = li.find("a", class_="entry-link")
         entry["url"] = entry_link["href"]
         entry["id"] = get_expense_id_from_url(entry["url"])
 
-        entry_info = entry_link.find("div", class_="col-xs-11").text.strip()
+        entry_info = entry_link.select_one("div.col-xs-11, div.entry-main").text.strip()
         expense_pattern = re.search(
             r"^(.*) (?:paid|hat) €(.*?) (?:for|für) (.*)", entry_info
         )
@@ -277,12 +313,30 @@ def parse_expenses(html: str, expense_type: ExpenseType) -> List[dict]:
         participants_text = entry_link.find(
             "span", class_="entry-label entry-label-parties"
         ).text.strip()
-        participants = participants_text.split(": ")[1]
-        if participants in ["Alle.", "everyone."]:
+        participants = participants_text.split(": ", 1)[1].rstrip(".").strip()
+        if participants.lower() in {"alle", "everyone"}:
             entry["participants"] = "all"
         else:
-            entry["participants"] = participants_text.split(": ")[1].strip(".")
+            entry["participants"] = participants
 
         entries.append(entry)
 
     return entries
+
+
+def _matches_expense_type(
+    item, expense_type: ExpenseType, viewing_party_id: Union[str, None]
+) -> bool:
+    if expense_type == ExpenseType.ALL:
+        return True
+    if viewing_party_id and item.has_attr("data-share-party-ids"):
+        participants = item["data-share-party-ids"].split(",")
+        involves_viewer = (
+            item.get("data-paid-by-id") == viewing_party_id
+            or viewing_party_id in participants
+        )
+        return involves_viewer == (expense_type == ExpenseType.YOURS)
+    expected_class = (
+        "entry-yours" if expense_type == ExpenseType.YOURS else "entry-others"
+    )
+    return expected_class in item["class"]

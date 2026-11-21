@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Union
+from typing import Dict, List, Tuple, Union
 from urllib.parse import quote, urlparse
 
 import requests
@@ -46,18 +46,20 @@ def kitty_endpoint(
             if user_needs_to_be_selected and self.selected_viewing_party_id is None:
                 raise ValueError("No user selected!")
 
+            endpoint = path.rstrip("/") if self._uses_participant_chooser else path
             kwargs.update(
                 {
-                    "path": path,
+                    "path": endpoint,
                     "method": method,
                 }
             )
             if csrf_protected:
-                kwargs.update(
-                    {
-                        "csrf_token": get_csrf_token(self.session, self.base_url, path),
-                    }
-                )
+                if self._uses_participant_chooser:
+                    kwargs["csrf_token"] = self._get_form_token(endpoint, endpoint)
+                else:
+                    kwargs["csrf_token"] = get_csrf_token(
+                        self.session, self.base_url, path
+                    )
 
             # call the function with the modified kwargs
             return func(self, *args, **kwargs)
@@ -72,9 +74,21 @@ class KittySplitAPI:
 
     def __init__(self, kitty_url: str) -> None:
         self.kitty_id = parse_kitty_id(kitty_url)
+        self._uses_participant_chooser = self.kitty_id.startswith("k/")
+        if self._uses_participant_chooser:
+            self.base_url = "https://www.kittysplit.com/"
         self.session: requests.Session = requests.Session()
-        self.available_users: Dict[str, str] = self.get_users()
         self.selected_viewing_party_id: Union[str, None] = None
+        self.available_users: Dict[str, str] = self.get_users()
+
+    def _get_form_token(self, page: str, action: str) -> str:
+        response = self._request("GET", page)
+        token = kitty_parser.parse_form_csrf_token(
+            response.text, f"/{self.kitty_id}{action}"
+        )
+        if not token:
+            raise ValueError("Kittysplit form is missing a CSRF token.")
+        return token
 
     def _request(
         self,
@@ -85,36 +99,73 @@ class KittySplitAPI:
     ) -> requests.Response:
         url = self.base_url + self.kitty_id + path
         if csrf_token:
-            data["_csrf_token"] = csrf_token
+            data = {**(data or {}), "_csrf_token": csrf_token}
         response = self.session.request(method, url, data=data)
         response.raise_for_status()
         return response
 
-    @kitty_endpoint("/entries/")
+    def _get_participant_chooser(self) -> Tuple[Dict[str, str], Union[str, None]]:
+        response = self._request("GET", "/parties/choose")
+        return kitty_parser.parse_participant_chooser(response.text, self.kitty_id)
+
     def get_users(self, **kwargs) -> Dict[str, str]:
-        response = self._request(kwargs.pop("method"), kwargs.pop("path"))
+        if self._uses_participant_chooser:
+            users, _ = self._get_participant_chooser()
+            return users
+        response = self._request("GET", "/entries/")
         user_parser = kitty_parser.KittySplitUserParser()
         user_parser.feed(response.text)
         return {name: id for id, name in user_parser.usernames}
 
-    @kitty_endpoint("/parties/set/", method="POST", csrf_protected=True)
     def select_user(self, username: str, **kwargs) -> None:
-        # set selected_viewing_party_id
-        self.selected_viewing_party_id = self.available_users.get(username)
-        if self.selected_viewing_party_id is None:
+        users, token = (
+            self._get_participant_chooser()
+            if self._uses_participant_chooser
+            else (self.available_users, None)
+        )
+
+        party_id = users.get(username)
+        if party_id is None:
             raise ValueError(f"{username} not available!")
 
-        form_data = {
-            "viewing_party_id": self.selected_viewing_party_id,
-        }
+        if self._uses_participant_chooser:
+            if not token:
+                raise ValueError(
+                    "Kittysplit participant chooser is missing a CSRF token."
+                )
+            self._select_participant(party_id, token)
+            self.available_users = users
+        else:
+            path = "/parties/set/"
+            self._request(
+                "POST",
+                path,
+                data={"viewing_party_id": party_id},
+                csrf_token=get_csrf_token(self.session, self.base_url, path),
+            )
+        self.selected_viewing_party_id = party_id
 
-        # Select party
-        self._request(
-            kwargs.pop("method"),
-            kwargs.pop("path"),
-            csrf_token=kwargs.pop("csrf_token"),
-            data=form_data,
+    def _select_participant(self, party_id: str, token: str) -> None:
+        path = fill_query_params("/parties/{}/set", party_id)
+        response = self._request("POST", path, csrf_token=token)
+        confirmation = kitty_parser.parse_guest_confirmation(
+            response.text, f"/{self.kitty_id}{path}"
         )
+        if confirmation:
+            response = self._request(
+                "POST",
+                path,
+                data={"skip_account_prompt": "true"},
+                csrf_token=confirmation,
+            )
+        location = urlparse(response.url)
+        if location.hostname != "www.kittysplit.com" or location.path.rstrip(
+            "/"
+        ) not in {
+            f"/{self.kitty_id}",
+            f"/{self.kitty_id}/entries",
+        }:
+            raise ValueError("Kittysplit did not confirm the selected participant.")
 
     @kitty_endpoint("/entries/", user_needs_to_be_selected=True)
     def get_expenses(
@@ -123,7 +174,11 @@ class KittySplitAPI:
         **kwargs,
     ) -> List[dict]:
         response = self._request(kwargs.pop("method"), kwargs.pop("path"))
-        expenses = kitty_parser.parse_expenses(response.text, expense_type=expense_type)
+        expenses = kitty_parser.parse_expenses(
+            response.text,
+            expense_type=expense_type,
+            viewing_party_id=self.selected_viewing_party_id,
+        )
 
         # add base url to detail expense pages
         for expense in expenses:
@@ -146,13 +201,16 @@ class KittySplitAPI:
     @kitty_endpoint(
         "/entries/{}/delete",
         method="POST",
-        csrf_protected=True,
         user_needs_to_be_selected=True,
     )
     def delete_expense(self, entry_id: str, **kwargs) -> None:
-        self._request(
-            kwargs.pop("method"), fill_query_params(kwargs.pop("path"), entry_id)
-        )
+        action = fill_query_params(kwargs.pop("path"), entry_id)
+        token = None
+        if self._uses_participant_chooser:
+            token = self._get_form_token(
+                fill_query_params("/entries/{}", entry_id), action
+            )
+        self._request(kwargs.pop("method"), action, csrf_token=token)
 
     @kitty_endpoint(
         "/entries/new/expense/",
