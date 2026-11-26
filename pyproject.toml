@@ -11,13 +11,30 @@ pykitty = "pykitty.cli:app"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-requests = "2.32.4"
-typer = "0.20.1"
+requests = [
+    {version = "2.32.5", python = "<3.10"},
+    {version = "2.33.0", python = ">=3.10"},
+]
+typer = "0.23.2"
 beautifulsoup4 = "4.15.0"
+# Use the security fixes available for each Python version.
+urllib3 = [
+    {version = "~2.6.3", python = "<3.10"},
+    {version = "^2.8.0", python = ">=3.10"},
+]
+soupsieve = [
+    {version = "~2.8.4", python = "<3.10"},
+    {version = "~2.10", python = ">=3.10,<3.11.5"},
+    {version = "^4.0", python = ">=3.11.5"},
+]
 
 [tool.poetry.group.dev.dependencies]
-black = ">=23.1,<25.0"
-isort = "^5.12.0"
+# Both Black fixes require Python 3.10 or newer.
+black = [
+    {version = "24.8.0", python = "<3.10"},
+    {version = "^26.10.1", python = ">=3.10"},
+]
+isort = "^6.1.0"
 coverage = "^7.2.5"
 
 [tool.isort]
