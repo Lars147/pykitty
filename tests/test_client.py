@@ -53,7 +53,7 @@ class TestKittySplitAPI(unittest.TestCase):
                 <input name="viewing_party_id" value="1">
                 <button>Example One</button>
             </form>
-        """
+        """,
         )
         token_page = MagicMock(text='<input name="_csrf_token" value="example-token">')
         expense_page = MagicMock(
@@ -116,7 +116,7 @@ class TestParticipantChooser(unittest.TestCase):
                 <input type="hidden" name="skip_account_prompt" value="true">
                 <button type="submit">Continue without account</button>
             </form>
-        """
+        """,
         )
         request.side_effect = [
             chooser,
@@ -210,7 +210,7 @@ class TestParticipantChooser(unittest.TestCase):
             <form method="post" action="/k/example-chooser/entries/other-expense/delete">
                 <input type="hidden" name="_csrf_token" value="unrelated-example-token">
             </form>
-        """
+        """,
         )
         request.side_effect = [
             chooser,
